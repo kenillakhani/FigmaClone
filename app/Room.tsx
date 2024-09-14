@@ -1,20 +1,26 @@
 "use client";
 
 import { ReactNode } from "react";
-import {
-  LiveblocksProvider,
-  RoomProvider,
-  ClientSideSuspense,
-} from "@liveblocks/react/suspense";
+import { RoomProvider } from "@/liveblocks.config";
+import { ClientSideSuspense } from "@liveblocks/react";
+import Loader from "@/components/Loader";
+import { LiveMap } from "@liveblocks/client";
 
 export function Room({ children }: { children: ReactNode }) {
   return (
-    <LiveblocksProvider publicApiKey={"pk_prod_gvjQe8kZ4gta6jiyyAlsfU6UqHmJqHPN-I3LWfhY-1oPvhiPmAN9ALIPqKEYivVD"}>
-      <RoomProvider id="my-room">
-        <ClientSideSuspense fallback={<div>Loading…</div>}>
-          {children}
+      <RoomProvider id="my-room" 
+      initialPresence={{
+        cursor: null,
+        cursorColor: null,
+        editingText: null
+      }}
+      initialStorage={{
+        canvasObjects: new LiveMap()
+      }}
+      >
+        <ClientSideSuspense fallback={<Loader/>}>
+          {() => children}
         </ClientSideSuspense>
       </RoomProvider>
-    </LiveblocksProvider>
   );
 }
