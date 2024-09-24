@@ -7,6 +7,7 @@ import ReactionSelector from "./reaction/ReactionButton";
 import FlyingReaction from "./reaction/FlyingReaction";
 import useInterval from "@/hooks/useInterval";
 import { useBroadcastEvent, useEventListener, useMyPresence, useOthers } from "@/liveblocks.config";
+import { Comments } from "./comments/Comments";
 
 type Props = {
   canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
@@ -180,6 +181,7 @@ const Live = ({ canvasRef }: Props) => {
       )}
       
         <LiveCursors others={others}/>
+        <Comments/>
     </div>
   )
 }
