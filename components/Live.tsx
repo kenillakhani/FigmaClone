@@ -1,22 +1,30 @@
 
 import LiveCursors from "./cursor/LiveCursors"
-import { use, useCallback, useEffect, useState } from "react";
-import { CursorMode, CursorState, Reaction, ReactionEvent } from "@/types/type";
+import { useCallback, useEffect, useState } from "react";
+import { CursorMode, CursorState, Reaction} from "@/types/type";
 import CursorChat from "./cursor/CursorChat";
 import ReactionSelector from "./reaction/ReactionButton";
 import FlyingReaction from "./reaction/FlyingReaction";
 import useInterval from "@/hooks/useInterval";
-import { useBroadcastEvent, useEventListener, useMyPresence, useOthers } from "@/liveblocks.config";
+import { useBroadcastEvent, useEventListener, useMyPresence} from "@/liveblocks.config";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu"
+import { shortcuts } from "@/constants";
 import { Comments } from "./comments/Comments";
+
 
 type Props = {
   canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
+  undo: () => void;
+  redo: () => void;
 }
 
-const Live = ({ canvasRef }: Props) => {
-
-    const others = useOthers();
-    const [{cursor}, updateMyPresence] = useMyPresence() as any;
+const Live = ({ canvasRef, undo, redo }: Props) => {
+    const [{cursor}, updateMyPresence] = useMyPresence();
 
     const [cursorState, setCursorState] = useState<CursorState>({
       mode: CursorMode.Hidden,
@@ -49,7 +57,7 @@ const Live = ({ canvasRef }: Props) => {
 
     useEventListener((eventData) => {
 
-        const event = eventData.event as ReactionEvent;
+        const event = eventData.event;
 
         setReaction((reactions) => reactions.concat([
           {
@@ -106,6 +114,29 @@ const Live = ({ canvasRef }: Props) => {
 
     }, []);
 
+    const handleContextMenuClick = useCallback((key: string) => {
+      switch (key) {
+        case 'Chat':
+          setCursorState({
+            mode: CursorMode.Chat,
+            previousMessage: null,
+            message: '',
+          })
+          break;
+        case 'Undo':
+          undo();
+          break;
+        case 'Redo':
+          redo();
+          break;
+        case 'Reactions':
+          setCursorState({
+            mode: CursorMode.ReactionSelector,
+          })
+          break;
+      }
+    }, [])
+
     useEffect(() => {
       const onKeyUp = (e: KeyboardEvent) => {
         if(e.key === '/') {
@@ -145,9 +176,16 @@ const Live = ({ canvasRef }: Props) => {
     },[updateMyPresence]);
 
   return (
+
+    <ContextMenu>
+      <ContextMenuTrigger>
+
     <div
+      className="relative flex h-full w-full flex-1 justify-center items-center"
       id="canvas"
-      className="h-[100vh] w-full flex justify-center items-center text-center"
+      style={{
+        cursor: cursorState.mode === CursorMode.Chat ? "none" : "auto",
+      }}
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
       onPointerDown={handlePointerDown}
@@ -180,9 +218,20 @@ const Live = ({ canvasRef }: Props) => {
         />
       )}
       
-        <LiveCursors others={others}/>
-        <Comments/>
+        <LiveCursors/>
+        <Comments />
     </div>
+    </ContextMenuTrigger>
+    
+    <ContextMenuContent className="right-menu-content">
+      {shortcuts.map((item) => (
+        <ContextMenuItem key={item.key} onClick={() => handleContextMenuClick(item.name)} className="right-menu-item">
+          <p>{item.name}</p>
+          <p className="text-xs text-primary-grey-300">{item.shortcut}</p>
+        </ContextMenuItem>
+      ))}
+    </ContextMenuContent>
+    </ContextMenu>
   )
 }
 

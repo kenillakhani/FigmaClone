@@ -1,17 +1,56 @@
 import { LiveMap, createClient } from "@liveblocks/client";
 import { createRoomContext } from "@liveblocks/react";
+import { ReactionEvent } from "./types/type";
 
 const client = createClient({
   throttle: 16,
   publicApiKey: process.env.NEXT_PUBLIC_LIVEBLOCKS_API_KEY!,
-});
+
+    async resolveUsers({ userIds }) {
+      // Used only for Comments. Return a list of user information retrieved
+      // from `userIds`. This info is used in comments, mentions etc.
+  
+      // const usersData = await __fetchUsersFromDB__(userIds);
+      //
+      // return usersData.map((userData) => ({
+      //   name: userData.name,
+      //   avatar: userData.avatar.src,
+      // }));
+  
+      return [];
+    },
+    async resolveMentionSuggestions({ text, roomId }) {
+      // Used only for Comments. Return a list of userIds that match `text`.
+      // These userIds are used to create a mention list when typing in the
+      // composer.
+      //
+      // For example when you type "@jo", `text` will be `"jo"`, and
+      // you should to return an array with John and Joanna's userIds:
+      // ["john@example.com", "joanna@example.com"]
+  
+      // const userIds = await __fetchAllUserIdsFromDB__(roomId);
+      //
+      // Return all userIds if no `text`
+      // if (!text) {
+      //   return userIds;
+      // }
+      //
+      // Otherwise, filter userIds for the search `text` and return
+      // return userIds.filter((userId) =>
+      //   userId.toLowerCase().includes(text.toLowerCase())
+      // );
+  
+      return [];
+    },
+  }
+);
 
 // Presence represents the properties that exist on every user in the Room
 // and that will automatically be kept in sync. Accessible through the
 // `user.presence` property. Must be JSON-serializable.
 type Presence = {
-  // cursor: { x: number, y: number } | null,
-  // ...
+  cursor: { x: number, y: number } | null,
+  message: string | null;
 };
 
 // Optionally, Storage represents the shared document that persists in the
@@ -19,6 +58,8 @@ type Presence = {
 // LiveList, LiveMap, LiveObject instances, for which updates are
 // automatically persisted and synced to all connected clients.
 type Storage = {
+  // author: LiveObject<{ firstName: string, lastName: string }>,
+  // ...
   canvasObjects: LiveMap<string, any>;
 };
 
@@ -32,10 +73,7 @@ type UserMeta = {
 
 // Optionally, the type of custom events broadcast and listened to in this
 // room. Use a union for multiple events. Must be JSON-serializable.
-type RoomEvent = {
-  // type: "NOTIFICATION",
-  // ...
-};
+type RoomEvent = ReactionEvent
 
 // Optionally, when using Comments, ThreadMetadata represents metadata on
 // each thread. Can only contain booleans, strings, and numbers.
@@ -47,7 +85,6 @@ export type ThreadMetadata = {
   y: number;
 };
 
-// No changes needed below
 export const {
   suspense: {
     RoomProvider,
@@ -63,9 +100,6 @@ export const {
     useEventListener,
     useErrorListener,
     useStorage,
-    useObject,
-    useMap,
-    useList,
     useBatch,
     useHistory,
     useUndo,
