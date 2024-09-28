@@ -9,7 +9,7 @@ export enum CursorMode {
 }
 
 export type CursorState =
-  | {
+   {
       mode: CursorMode.Hidden;
     }
   | {
@@ -24,7 +24,11 @@ export type CursorState =
       mode: CursorMode.Reaction;
       reaction: string;
       isPressed: boolean;
-    };
+    }
+    // |
+    // {
+    //   message: string;
+    // };
 
 export type Reaction = {
   value: string;
@@ -85,7 +89,7 @@ export type ElementDirection = {
 
 export type ImageUpload = {
   file: File;
-  canvas: React.MutableRefObject<fabric.Canvas>;
+  canvas: React.MutableRefObject<fabric.Canvas | null>;
   shapeRef: React.MutableRefObject<fabric.Object | null>;
   syncShapeInStorage: (shape: fabric.Object) => void;
 };
@@ -180,6 +184,7 @@ export type CursorChatProps = {
     presence: Partial<{
       cursor: { x: number; y: number };
       cursorColor: string;
+      editingText: null;
       message: string;
     }>
   ) => void;

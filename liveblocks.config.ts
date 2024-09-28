@@ -44,7 +44,9 @@ async resolveUsers({ userIds }) {
 // `user.presence` property. Must be JSON-serializable.
 type Presence = {
   cursor: { x: number, y: number } | null,
-  message: string | null;
+  cursorColor: string | null,
+  editingText: null,
+  message: string | null
 };
 
 // Optionally, Storage represents the shared document that persists in the

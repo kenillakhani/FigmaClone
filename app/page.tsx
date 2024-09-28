@@ -37,22 +37,21 @@ export default function Page() {
       stroke: '#aabbcc'
     })
 
-    const canvasObjects = useStorage((root: { canvasObjects: any }) => root.canvasObjects);
+    const canvasObjects = useStorage((root) => root.canvasObjects);
 
-    const syncShapeInStorage = useMutation(({ storage }: { storage: any }, object: any) => {
-
-      if(!object) return;
-
+    const syncShapeInStorage = useMutation(({ storage }, object) => {
+      // if the passed object is null, return
+      if (!object) return;
       const { objectId } = object;
-
+  
       const shapeData = object.toJSON();
       shapeData.objectId = objectId;
-
-      const canvasObjects = storage.get('canvasObjects');
-
+  
+      const canvasObjects = storage.get("canvasObjects");
+     
       canvasObjects.set(objectId, shapeData);
-
-    },[]);
+    }, []);
+  
 
     const [activeElement, setActiveElement] = useState<ActiveElement>({
         value: "",
@@ -93,7 +92,7 @@ export default function Page() {
             break;
           
           case 'delete':
-            handleDelete(fabricRef.current as any, deleteShapeFromStorage);
+            handleDelete(fabricRef.current as fabric.Canvas, deleteShapeFromStorage);
               setActiveElement(defaultNavElement);
             break;
           case 'image':
@@ -114,7 +113,7 @@ export default function Page() {
     useEffect(() => {
         const canvas = initializeFabric({canvasRef, fabricRef});
 
-        canvas.on("mouse:down", (options: any) => {
+        canvas.on("mouse:down", (options: fabric.IEvent<MouseEvent>) => {
           handleCanvasMouseDown({
             options,
             canvas,
@@ -124,7 +123,7 @@ export default function Page() {
           });
         });
 
-        canvas.on("mouse:move", (options: any) => {
+        canvas.on("mouse:move", (options: fabric.IEvent<MouseEvent>) => {
           handleCanvaseMouseMove({
             options,
             canvas,
@@ -147,14 +146,14 @@ export default function Page() {
           });
         });
 
-        canvas.on("object:modified", (options: any) => {
+        canvas.on("object:modified", (options: fabric.IEvent) => {
           handleCanvasObjectModified({
             options,
             syncShapeInStorage
           })
         });
 
-        canvas.on("selection:created", (options: any) => {
+        canvas.on("selection:created", (options: fabric.IEvent) => {
           handleCanvasSelectionCreated({
             options,
             isEditingRef,
@@ -162,14 +161,14 @@ export default function Page() {
           })
         });
 
-        canvas.on("object:scaling", (options: any) => {
+        canvas.on("object:scaling", (options: fabric.IEvent) => {
           handleCanvasObjectScaling({
             options,
             setElementAttributes
         });
         });
 
-        canvas.on("path:created", (options: any) => {
+        canvas.on("path:created", (options: fabric.IEvent) => {
           handlePathCreated({
             options,
             syncShapeInStorage
@@ -195,7 +194,7 @@ export default function Page() {
           canvas.dispose();
         }
 
-    }, []);
+    },[]);
 
     useEffect(() => {
       renderCanvas({
@@ -211,14 +210,16 @@ export default function Page() {
         activeElement={activeElement}
         handleActiveElement={handleActiveElement}
         imageInputRef={imageInputRef}
-        handleImageUpload={(e: any) => {
+        handleImageUpload={(e: React.ChangeEvent<HTMLInputElement>) => {
           e.stopPropagation();
+          if (e.target.files && e.target.files[0]) {
           handleImageUpload({
             file: e.target.files[0],
-            canvas: fabricRef as any,
+            canvas: fabricRef,
             shapeRef,
             syncShapeInStorage
-          })
+          });
+        }
         }}
       />
       <section className="flex h-full flex-row ">
